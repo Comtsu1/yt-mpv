@@ -4,8 +4,21 @@
  *    and keep track of videos
  */
 
-#include <stdlib.h>
+/* TODO LIST
+ * -----------------------------------------
+ *  1. Implement video viewing when
+ *  calling the program without arguments
+ *  2. Download video from yt ID
+ *  3. Categorise videos
+ *  4. mpv integration(see from yt-mpv
+ *  where you left the video)
+ *  (Maybe) 5. Automatic download
+ *  of new uploads from a channel
+ * -----------------------------------------
+ */
+
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <string.h>
 #include <stdbool.h>
@@ -15,135 +28,142 @@
 #include "is_match.h"
 #include "is_extension.h"
 
+#include "colors.h"
+
+//////////////
+/* Commands */
+//////////////
+//#include "commands/show_help.h"
+#include "commands/list_videos.h"
+//#include "commands/download_video.h"
+
 #define SIZE(x) (sizeof(x) / sizeof(x[0]))
 #define LENLIM 256
 
-void show_help(int all, int index, char ** buf, ...);
-void list_videos(int all, int index, char ** dir, ...);
-void download_video(int all, int index, char ** buf, ...);
+/////////////
+/*Functions*/
+/////////////
+bool parse_config_file(FILE *file)
+{
 
-///////////////
-/* Functions */
-///////////////
+    // TODO 
+
+// No problems found
+    return 1;
+}
+
+bool open_config_file(const char *const config_f)
+{
+    // TODO
+    // return pointer to file???!?!
+
+    FILE *file;
+// Opening file
+    file = fopen(config_f, "r");
+// Files doesn't exist 
+    if(!file)
+    {
+    // Warn user that the files
+    // wasn't created
+        WARN();
+        fprintf(stderr, "Config file \"%s\" wasn't found, creating new empty file...\n", config_f);
+    // Create new file
+    // with "w" mode (write mode)
+        file = fopen(config_f, "w");
+    // Something went wrong
+    // and file wans't created
+        if(!file)
+        {
+            ERR();
+            fprintf(stderr, "Config file \"%s\" couldn't be created... %s\n", config_f, strerror(errno));
+            return 0;
+        }
+    // File created
+        NOTE();
+        fprintf(stdout, "Created config file \"%s\"\n", config_f);
+    }
+
+    // TODO parse config_file
+    parse_config_file(file);
+
+// close file
+// we dont need it
+    fclose(file);
+    
+// return 1 for successfully opening
+// the file
+    return 1;
+}
+
+/* Variables */
+static char folder_path[LENLIM] = ".";
+static char config_file[LENLIM] = ".watchrc";
+
+/////////////////////////////////////////////////////////
+/*                                                     */
+/*                      TODO                           */
+/*                Redo main function                   */
+/////////////////////////////////////////////////////////
+// for the start of this project
+// we won't be using argc or argv
+// as they have completly an utterly
+// made me want to throw myself of the
+// 15th floor
+int main()
+{
+    char open_config[LENLIM];
+// make config file path
+    snprintf(open_config, LENLIM, "%s/%s", folder_path, config_file);
+
+// Try to open/create config file
+    if ( !open_config_file(open_config) )
+    {
+        // Something very wrong happened
+        fprintf(stderr, "Exiting...\n");
+        exit(EXIT_FAILURE);
+    }
+
+    list_videos(folder_path);
 
 
-void show_help(int all, int index, char ** buf, ...)
-{ // Show help when no arguments are presented
-    fprintf(stdout, "This is the help page:"
-		    "\n\t-h(elp)\t\t\tHelp"
-            "\n\t-d(ownload)\t\tDownloads Youtube link ID" // TODO
-            "\n\t-l(ist)\t\t\tLists all videos in a directory(Default \".\")");
-// Exit our program
-// as the user didn't put enough info
-// or
-// wanted to see help page
+// Exit program
+// Everything is going
+// OK
     exit(EXIT_SUCCESS);
 }
 
-void list_videos(int all, int index, char ** buf, ...)
-{ // List videos from a directory
-  // TODO currently prints everything
-  // fix!
-    char path[LENLIM];
-    
-    const char * dirsub[] = {".", "..", NULL};
-
-    // Check if we are at the end of the array and default to .
-    if (index+1 == all) strncpy(path, ".", LENLIM);
-    // Check if the user didnt provide a path
-    // and if yes then we pressume its directory "."
-    else if(buf[index+1][0] == '-') strncpy(path, ".", LENLIM);
-    // if none of the above just copy the next argv
-    else strncpy(path, buf[index + 1], LENLIM);
 
 
-    DIR *d;
-    struct dirent *dir;
-    d = opendir(path);
-    // If we have such a directory then open it
-    if(d)
-    { // Opened the directory
-        // Read files from selected dir
-        while((dir = readdir(d)) != NULL)
-        {
-            // Check if we have dir "." or ".."
-            if(!is_match(dir->d_name, dirsub))
-            { 
-                // See if file has the extension webm ig
-                if(is_extension(dir->d_name, "mkv"))
-                    printf("%s\n", dir->d_name);
-            }
-        }
-        // Close the directory when we are done
-        closedir(d);
-    }
-    else
-    { // Something went wrong
-        printf("Errno code: %d\n"
-                "Please visit %s"
-                "\nto see the error code", errno, "https://www.cisco.com/c/en/us/td/docs/ios/sw_upgrades/interlink/r2_0/unpremsg/mucsock.html");
-    }
-
-}
-
-void download_videos(int all, int index, char **buf, ...)
-{ // Downloads selected videos (through ID link)
-  // TODO
-}
-
-/////////////
-/* Structs */
-/////////////
-
-struct Video
-{ // TODO
-    char *name;
-};
-struct Command
-{
-    int ab;
-    const char *const names[16];
-    void (*func)(int, int, char **, ...);
-};
 
 
-typedef struct Video video;
-typedef struct Command command;
 
-
-/* Variables */
-static char file_path[LENLIM] = "~/Videos";
-
-static const command gcommands[] =
-{
-    {2, .names={"h", "help"}, &show_help},
-    {2, .names={"l", "list"}, &list_videos},
-};
+/*
 
 int main(int argc, char *argv[])
 {
-/* Check if the number of arguments is less than one then show help page*/
+// Check if the number of arguments is less than one then show help page
+    // implement video viewing function
     if(argc < 2) show_help(-1, -1, argv);
 
 // Iterators
-    int i, j;
+    int i;
 
 
 // We skip over the first one as it is
 // the name of the program
 // Ex:
 // Input: nasm -c shit.asm -o shit.bin
-// argv[1] = "nasm"
+// argv[0] = "nasm"
     for(i = 1; i < argc; ++i)
     {
         // Check if argument is command
         if(argv[i][0] == '-')
         { // Search for a match
-        // Search all the commands for a match
             int cnt;
             bool c_found = 0;
             const char *cmd = argv[i] + 1;
 
+            // Search all the commands for a match
             for(cnt=0; cnt<SIZE(gcommands) && !c_found; ++cnt)
             {
                 // Search through all the commands
@@ -154,9 +174,10 @@ int main(int argc, char *argv[])
                     gcommands[cnt].func(argc, i, argv);
                 }
             }
+            // We have't found the command, exit
             if(!c_found)
             {
-                    printf("Command \"%s\" was not found, exiting...", argv[i]);
+                    fprintf(stdout, "Command \"%s\" was not found, exiting...\n", argv[i]);
                     exit(EXIT_FAILURE);
             }
         }
@@ -167,3 +188,4 @@ int main(int argc, char *argv[])
 // OK
     exit(EXIT_SUCCESS);
 }
+*/
