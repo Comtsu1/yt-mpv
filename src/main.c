@@ -43,7 +43,35 @@
 /////////////
 /*Functions*/
 /////////////
-bool parse_config_file(FILE *file)
+FILE* create_config_file(const char *const path)
+{
+// Check if file path is NULL
+    if(path == NULL)
+    {
+        ERR();
+        fprintf(stderr, "Can't create config file, path is empty...\n");
+        return NULL;
+    }
+// Create config file
+    FILE *file;
+    file = fopen(path, "w");
+// Check if we created the file
+    if(!path)
+    {
+    // Couldn't create file
+        ERR();
+        fprintf(stderr, "Couldn't create config file \"%s\"... %s\n",path, strerror(errno));
+        return NULL;
+    }
+// Created config file
+    NOTE();
+    fprintf(stdout, "Create config file \"%s\"...\n", path);
+
+    return file;
+}
+
+// FIXME maybe not FILE const...?
+bool parse_config_file(FILE *const file)
 {
 
     // TODO 
@@ -60,7 +88,7 @@ bool open_config_file(const char *const config_f)
     FILE *file;
 // Opening file
     file = fopen(config_f, "r");
-// Files doesn't exist 
+// Check if file doesn't exist
     if(!file)
     {
     // Warn user that the files
@@ -68,19 +96,8 @@ bool open_config_file(const char *const config_f)
         WARN();
         fprintf(stderr, "Config file \"%s\" wasn't found, creating new empty file...\n", config_f);
     // Create new file
-    // with "w" mode (write mode)
-        file = fopen(config_f, "w");
-    // Something went wrong
-    // and file wans't created
-        if(!file)
-        {
-            ERR();
-            fprintf(stderr, "Config file \"%s\" couldn't be created... %s\n", config_f, strerror(errno));
+        if( !(file = create_config_file(config_f)) )
             return 0;
-        }
-    // File created
-        NOTE();
-        fprintf(stdout, "Created config file \"%s\"\n", config_f);
     }
 
     // TODO parse config_file
@@ -111,14 +128,14 @@ static char config_file[LENLIM] = ".watchrc";
 // 15th floor
 int main()
 {
-    char open_config[LENLIM];
+    char open_config[LENLIM*2];
 // make config file path
-    snprintf(open_config, LENLIM, "%s/%s", folder_path, config_file);
+    snprintf(open_config, LENLIM*2, "%s/%s", folder_path, config_file);
 
 // Try to open/create config file
     if ( !open_config_file(open_config) )
     {
-        // Something very wrong happened
+    // Something very wrong happened
         fprintf(stderr, "Exiting...\n");
         exit(EXIT_FAILURE);
     }
