@@ -1,6 +1,7 @@
 #ifndef COLORS_H
 #define COLORS_H
 
+// terminal colors
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
 #define ANSI_COLOR_YELLOW  "\x1b[33m"
@@ -8,9 +9,5 @@
 #define ANSI_COLOR_MAGENTA "\x1b[35m"
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
-
-#define WARN() fprintf(stderr, ANSI_COLOR_YELLOW "Warning: " ANSI_COLOR_RESET)
-#define ERR()  fprintf(stderr, ANSI_COLOR_RED    "Error: "   ANSI_COLOR_RESET)
-#define NOTE() fprintf(stdout, ANSI_COLOR_CYAN   "Note: "    ANSI_COLOR_RESET)
 
 #endif

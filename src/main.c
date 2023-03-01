@@ -24,11 +24,12 @@
 #include <stdbool.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <linux/limits.h>
 
+#include "playlist.h"
 #include "is_match.h"
 #include "is_extension.h"
-
-#include "colors.h"
+#include "utils.h"
 
 //////////////
 /* Commands */
@@ -38,7 +39,6 @@
 //#include "commands/download_video.h"
 
 #define SIZE(x) (sizeof(x) / sizeof(x[0]))
-#define LENLIM 256
 
 /////////////
 /*Functions*/
@@ -48,8 +48,7 @@ FILE* create_config_file(const char *const path)
 // Check if file path is NULL
     if(path == NULL)
     {
-        ERR();
-        fprintf(stderr, "Can't create config file, path is empty...\n");
+        ERR("Can't create config file, path is empty...\n");
         return NULL;
     }
 // Create config file
@@ -59,13 +58,11 @@ FILE* create_config_file(const char *const path)
     if(!path)
     {
     // Couldn't create file
-        ERR();
-        fprintf(stderr, "Couldn't create config file \"%s\"... %s\n",path, strerror(errno));
+        ERR("Couldn't create config file \"%s\"... %s\n",path, strerror(errno));
         return NULL;
     }
 // Created config file
-    NOTE();
-    fprintf(stdout, "Create config file \"%s\"...\n", path);
+    NOTE("Create config file \"%s\"...\n", path);
 
     return file;
 }
@@ -80,6 +77,8 @@ bool parse_config_file(FILE *const file)
     return 1;
 }
 
+// change to return FILE*
+// TODO 
 bool open_config_file(const char *const config_f)
 {
     // TODO
@@ -93,8 +92,7 @@ bool open_config_file(const char *const config_f)
     {
     // Warn user that the files
     // wasn't created
-        WARN();
-        fprintf(stderr, "Config file \"%s\" wasn't found, creating new empty file...\n", config_f);
+        WARN("Config file \"%s\" wasn't found, creating new empty file...\n", config_f);
     // Create new file
         if( !(file = create_config_file(config_f)) )
             return 0;
@@ -113,8 +111,8 @@ bool open_config_file(const char *const config_f)
 }
 
 /* Variables */
-static char folder_path[LENLIM] = ".";
-static char config_file[LENLIM] = ".watchrc";
+static char folder_path[NAME_MAX+1] = ".";
+static char config_file[NAME_MAX+1] = ".watchrc";
 
 /////////////////////////////////////////////////////////
 /*                                                     */
@@ -128,9 +126,9 @@ static char config_file[LENLIM] = ".watchrc";
 // 15th floor
 int main()
 {
-    char open_config[LENLIM*2];
+    char open_config[PATH_MAX];
 // make config file path
-    snprintf(open_config, LENLIM*2, "%s/%s", folder_path, config_file);
+    snprintf(open_config, PATH_MAX, "%s/%s", folder_path, config_file);
 
 // Try to open/create config file
     if ( !open_config_file(open_config) )
@@ -140,7 +138,15 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    list_videos(folder_path);
+    Playlist* p; //= get_playlist("/home/comtsu/Videos/random_shit");
+    //p = init_playlist("/home/comtsu/Videos/random_shit");
+    p = get_playlist("/home/comtsu/Videos/random_shit");
+    print_playlist(p);
+    free_playlist(p);
+
+
+
+    //list_videos(folder_path, "webm");
 
 
 // Exit program
@@ -148,61 +154,3 @@ int main()
 // OK
     exit(EXIT_SUCCESS);
 }
-
-
-
-
-
-
-/*
-
-int main(int argc, char *argv[])
-{
-// Check if the number of arguments is less than one then show help page
-    // implement video viewing function
-    if(argc < 2) show_help(-1, -1, argv);
-
-// Iterators
-    int i;
-
-
-// We skip over the first one as it is
-// the name of the program
-// Ex:
-// Input: nasm -c shit.asm -o shit.bin
-// argv[0] = "nasm"
-    for(i = 1; i < argc; ++i)
-    {
-        // Check if argument is command
-        if(argv[i][0] == '-')
-        { // Search for a match
-            int cnt;
-            bool c_found = 0;
-            const char *cmd = argv[i] + 1;
-
-            // Search all the commands for a match
-            for(cnt=0; cnt<SIZE(gcommands) && !c_found; ++cnt)
-            {
-                // Search through all the commands
-                // If found, call function stored in struct
-                if(is_match(cmd, gcommands[cnt].names))
-                {
-                    c_found = 1;
-                    gcommands[cnt].func(argc, i, argv);
-                }
-            }
-            // We have't found the command, exit
-            if(!c_found)
-            {
-                    fprintf(stdout, "Command \"%s\" was not found, exiting...\n", argv[i]);
-                    exit(EXIT_FAILURE);
-            }
-        }
-    }
-
-// Exit program
-// Everything is going
-// OK
-    exit(EXIT_SUCCESS);
-}
-*/

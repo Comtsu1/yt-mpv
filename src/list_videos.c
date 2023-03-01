@@ -7,38 +7,36 @@
 #include <dirent.h>
 #include <sys/types.h>
 
+#include "playlist.h"
 #include "is_extension.h"
 
-#include "colors.h"
-
-#define LENLIM 256
+#include "utils.h"
 
 void list_videos(const char *const path, const char *const ext)
 { // List videos from a directory
   // TODO currently prints everything
   // fix!
 
-    char current_path[LENLIM];
+// Check if extension if NULL
+    if(!ext)
+    {
+        ERR("Extension for searching in directory is empty!...\n");
+    }
+    char current_path[NAME_MAX];
 
 // Check if the path is null
     if(!path)
     {
-        WARN();
-        fprintf(stderr, "Path is NULL, defaulting to \"~/Videos\"\n");
+        WARN("Path is NULL, defaulting to \"~/Videos\"\n");
     // Copy default string
     // ~/Videos
-        snprintf(current_path, LENLIM,"%s", ".");
+        snprintf(current_path, NAME_MAX,"%s", ".");
     }
     else
     {
-        snprintf(current_path, LENLIM, "%s", path);
+        snprintf(current_path, NAME_MAX, "%s", path);
     }
-// Check if extension if NULL
-    if(!ext)
-    {
-        ERR();
-        fprintf(stderr, "Extension for searching in directory is empty!...\n");
-    }
+
 
     bool file_found = 0;
 
@@ -59,12 +57,12 @@ void list_videos(const char *const path, const char *const ext)
         // file and not a dir
             if( dir->d_type == DT_REG )
             { 
-            // See if file has the extension webm ig
-                if(is_extension(dir->d_name, "mkv"))
+            // See if file has the extension 
+                if(is_extension(dir->d_name, ext))
                 {
                 // Mark that we found a file
                     file_found = 1;
-                    fprintf(stdout, "Found file: %s\n", dir->d_name);
+                    NOTE("Found file: %s\n", dir->d_name);
                 }
             }
         }
@@ -74,10 +72,7 @@ void list_videos(const char *const path, const char *const ext)
     else
     { 
     // Something went wrong
-        ERR();
-        fprintf(stderr, "Couldn't open \"%s\"\n", current_path);
-        fprintf(stderr, "Errno code: %d => "
-                "%s\n", errno, strerror(errno));
+        ERR("Couldn't open \"%s\", %s\n", current_path, strerror(errno));
         exit(EXIT_FAILURE);
     }
 
@@ -85,7 +80,6 @@ void list_videos(const char *const path, const char *const ext)
 // but no files found
     if(!file_found)
     {
-        NOTE();
-        fprintf(stdout, "No files found with extension \"%s\"\n", "mkv"); 
+        NOTE("No files found with extension \"%s\"\n", ext); 
     }
 }
