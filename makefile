@@ -13,8 +13,9 @@ COM_OBJ = $(patsubst $(SRC)/commands/%.c, $(BIN)/%.o, COM_FILES)
 
 C_WARN = -Wextra -Wall -Wshadow -Wundef -fno-common -Wconversion -Wpadded -Wpedantic
 C_FLAGS = -v -Os -std=c2x -D_DEFAULT_SOURCE
+C_SAN   = -fsanitize=address
 INCLUDE_DIR = -I$(INCLUDE)/ 
-C_ALL = $(C_WARN) $(C_FLAGS) $(INCLUDE_DIR)
+C_ALL = $(C_WARN) $(C_FLAGS) $(INCLUDE_DIR) $(C_SAN)
 
 all: dirs $(C_OBJS) $(COM_OBJS) link
 
@@ -25,7 +26,7 @@ $(BIN)/%.o: $(SRC)/%.c
 	$(CC) $(C_ALL) -c $< -o $@
 
 link:
-	$(CC) -o $(EXE_NAME) $(BIN)/*.o
+	$(CC) -o $(EXE_NAME) $(BIN)/*.o $(C_SAN)
 
 c:
 	rm $(BIN)/*.o

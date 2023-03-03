@@ -35,7 +35,6 @@
 /* Commands */
 //////////////
 //#include "commands/show_help.h"
-#include "commands/list_videos.h"
 //#include "commands/download_video.h"
 
 #define SIZE(x) (sizeof(x) / sizeof(x[0]))
@@ -138,16 +137,20 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    Playlist* p; //= get_playlist("/home/comtsu/Videos/random_shit");
-    //p = init_playlist("/home/comtsu/Videos/random_shit");
-    p = get_playlist("/home/comtsu/Videos/random_shit");
-    print_playlist(p);
+    Playlist* p;
+    p = create_playlist(10);
+    if(p != NULL)
+    {
+        char *a = "Hello",
+             *b = "No";
+        p->videos[0] = a;
+        p->videos[1] = b;
+
+        printf("%s, %s", p->videos[0] = a, 
+                p->videos[1] = b);
+    }
+
     free_playlist(p);
-
-
-
-    //list_videos(folder_path, "webm");
-
 
 // Exit program
 // Everything is going
